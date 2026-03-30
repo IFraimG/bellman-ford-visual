@@ -109,7 +109,19 @@ const edges = ref<Edge[]>([
 const { formState, resetNewEdge, resetPathSearch, validateNewEdgeForm, validatePathSearchForm } =
   useValidation()
 
-const appendVer = (edgeSymbol: String | null) => {
+
+const generateUniqueLabel = () => {
+  const existingLabels = nodes.value.map((node: CustomNode) => node.data.label)
+  let charCode = 'A'.charCodeAt(0)
+
+  while (existingLabels.includes(String.fromCharCode(charCode))) {
+    charCode++
+  }
+
+  return String.fromCharCode(charCode)
+}
+
+const appendVer = (edgeSymbol: string | null) => {
   if (nodes.value.length > 25) {
     alert("Cлишком много вершин!")
     return -1
@@ -119,8 +131,7 @@ const appendVer = (edgeSymbol: String | null) => {
   const lastElement: Node = copyNodeValues[length - 1] ?? baseNode
 
   const newVerID = parseInt(lastElement.id) + 1
-  const newVerTitle =
-    edgeSymbol == null ? lastElement.data.label.charCodeAt() + 1 : edgeSymbol.charCodeAt(0)
+  const newVerTitle = edgeSymbol ?? generateUniqueLabel()
   const newVerCoordX = length % 5 == 0 ? 100 : lastElement.position.x + STEP
   const newVerCoordY =
     length % 5 == 0 ? lastElement.position.y + STEP : lastElement.position.y
@@ -129,7 +140,7 @@ const appendVer = (edgeSymbol: String | null) => {
     id: newVerID.toString(),
     position: { x: newVerCoordX, y: newVerCoordY },
     class: 'vue-node-custom-class',
-    data: { label: String.fromCharCode(newVerTitle) },
+    data: { label: newVerTitle },
     targetPosition: Position.Left,
     sourcePosition: Position.Right,
   }
