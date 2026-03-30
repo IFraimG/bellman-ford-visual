@@ -1,7 +1,7 @@
 <template>
   <div class="wrapper">
     <VueFlow :nodes="nodes" :edges="edges" :nodes-draggable="false" :nodes-selectable="false">
-      <Panel>
+      <Panel class="content" position="top-left">
         <div class="form-ver">
           <input
             id="input-in"
@@ -29,7 +29,7 @@
           />
           <button id="connect-ver-btn" class="form-ver-button" @click="createEdge">Соединить вершины</button>
         </div>
-        <button id="ver-append-button" class="form-ver-button" @click="() => appendVer()">Добавить вершину</button>
+        <button id="ver-append-button" class="form-ver-button" @click="() => appendVer(null)">Добавить вершину</button>
         <div class="form-ver">
           <input
             type="text"
@@ -58,18 +58,29 @@ import { execute } from './algorithm'
 import './style.css'
 import useValidation from './useValidation'
 
+interface CustomNode extends Node {
+  data: {
+    label: string
+  }
+  id: string,
+  position: {
+    x: number
+    y: number
+  },
+}
+
 const STEP = 350
 
-const nodes = ref<Node[]>([
-  {
-    id: '0',
-    position: { x: 100, y: 200 },
-    data: { label: 'A' },
-    class: 'vue-node-custom-class',
-    targetPosition: Position.Left,
-    sourcePosition: Position.Right,
-  },
-])
+const baseNode = {
+  id: '0',
+  position: { x: 100, y: 200 },
+  data: { label: 'A' },
+  class: 'vue-node-custom-class',
+  targetPosition: Position.Left,
+  sourcePosition: Position.Right,
+}
+
+const nodes = ref<CustomNode[]>([baseNode])
 
 const labelEdgeStyle = {
   fill: '#417d67',
@@ -82,7 +93,7 @@ const edgeStyle = {
   strokeWidth: 2,
 }
 
-const edges = ref<Edge>([
+const edges = ref<Edge[]>([
   // {
   //   id: '01',
   //   type: 'default',
@@ -101,18 +112,18 @@ const { formState, resetNewEdge, resetPathSearch, validateNewEdgeForm, validateP
 const appendVer = (edgeSymbol: String | null) => {
   if (nodes.value.length > 25) {
     alert("Cлишком много вершин!")
-    return
+    return -1
   }
-  const copyNodeValues = [...nodes.value]
+  const copyNodeValues: Node[] = [...nodes.value]
   const length = copyNodeValues.length
-  const lastElement = copyNodeValues[length - 1]
+  const lastElement: Node = copyNodeValues[length - 1] ?? baseNode
 
   const newVerID = parseInt(lastElement.id) + 1
   const newVerTitle =
     edgeSymbol == null ? lastElement.data.label.charCodeAt() + 1 : edgeSymbol.charCodeAt(0)
-  const newVerCoordX = length % 5 == 0 ? 100 : parseInt(lastElement.position.x) + STEP
+  const newVerCoordX = length % 5 == 0 ? 100 : lastElement.position.x + STEP
   const newVerCoordY =
-    length % 5 == 0 ? parseInt(lastElement.position.y) + STEP : parseInt(lastElement.position.y)
+    length % 5 == 0 ? lastElement.position.y + STEP : lastElement.position.y
 
   const ver = {
     id: newVerID.toString(),
@@ -127,6 +138,11 @@ const appendVer = (edgeSymbol: String | null) => {
 }
 
 const createEdge = () => {
+  if (nodes.value.length > 25) {
+    alert("Cлишком много вершин!")
+    return
+  }
+
   if (!validateNewEdgeForm()) {
     alert('Неверно указаны данные!')
     return
@@ -145,24 +161,24 @@ const createEdge = () => {
     outputVerIndex = appendVer(formState.state.newEdge.outputVer) - 1
   }
 
-  if (parseInt(nodes.value[inputVerIndex].id) > nodes.value[outputVerIndex].id) {
+  if (nodes.value[inputVerIndex]!.id > nodes.value[outputVerIndex]!.id) {
     nodes.value[inputVerIndex] = {
-      ...nodes.value[inputVerIndex],
+      ...nodes.value[inputVerIndex]!,
       targetPosition: Position.Right,
     }
     nodes.value[outputVerIndex] = {
-      ...nodes.value[outputVerIndex],
+      ...nodes.value[outputVerIndex]!,
       targetPosition: Position.Left,
     }
   }
 
-  nodes.value[inputVerIndex] = { ...nodes.value[inputVerIndex], type: 'input' }
-  nodes.value[outputVerIndex] = { ...nodes.value[outputVerIndex], type: 'output' }
+  nodes.value[inputVerIndex] = { ...nodes.value[inputVerIndex]!, type: 'input' }
+  nodes.value[outputVerIndex] = { ...nodes.value[outputVerIndex]!, type: 'output' }
   edges.value.push({
-    id: `${nodes.value[inputVerIndex].id}${nodes.value[outputVerIndex].id}`,
+    id: `${nodes.value[inputVerIndex]!.id}${nodes.value[outputVerIndex]!.id}`,
     type: 'default',
-    source: nodes.value[inputVerIndex].id.toString(),
-    target: nodes.value[outputVerIndex].id.toString(),
+    source: nodes.value[inputVerIndex]!.id.toString(),
+    target: nodes.value[outputVerIndex]!.id.toString(),
     label: formState.state.newEdge.weightVer.toString(),
     class: 'vue-edge-custom-class',
     style: edgeStyle,
@@ -179,22 +195,22 @@ const findRoute = () => {
     alert('Неверно указаны данные!')
     return
   }
-  const startVer = nodes.value.find(
-    (item: Node) => item.data.label == formState.state.pathSearch.startVer,
-  )?.id
-  const verEnd = nodes.value.find(
-    (item: Node) => item.data.label == formState.state.pathSearch.endVer,
-  )?.id
+  const startVer: string = nodes.value.find(
+    (item: CustomNode) => item.data.label == formState.state.pathSearch.startVer,
+  )?.id!
+  const verEnd: string = nodes.value.find(
+    (item: CustomNode) => item.data.label == formState.state.pathSearch.endVer,
+  )?.id!
   const graph: number[][] = edges.value.map((item: Edge) => {
-    return [parseInt(item.source), parseInt(item.target), parseInt(item.label)]
+    return [parseInt(item.source), parseInt(item.target), parseInt(item.label as string)]
   })
-  let maxValue = graph[0][0]
+  let maxValue = graph[0]![0]!
   graph.forEach((item) => {
-    maxValue = Math.max(maxValue, item[0])
-    maxValue = Math.max(maxValue, item[1])
+    maxValue = Math.max(maxValue, item[0]!)
+    maxValue = Math.max(maxValue, item[1]!)
   })
 
-  const result = execute(graph, maxValue + 1, parseInt(startVer), verEnd)
+  const result = execute(graph, maxValue + 1, parseInt(startVer), parseInt(verEnd))
   alert(
     `Итоговый результат ${formState.state.pathSearch.startVer} -> ${formState.state.pathSearch.endVer}: ${result}`,
   )

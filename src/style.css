@@ -71,6 +71,10 @@ input:focus {
   outline: none;
 }
 
+.content {
+  margin: 20px;
+}
+
 .ver-input {
   max-width: 30px;
   font-size: 16px;

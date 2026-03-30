@@ -1,33 +1,32 @@
 export const execute = (
-  graph: number[][] = [],
-  verCount: number,
-  verStart: number,
-  verEnd: number,
+  graph: number[][],
+  verCount: number = 0,
+  verStart: number = 0,
+  verEnd: number = 0,
 ) => {
-  let dist: number[] = new Array(verCount).fill(Infinity)
+  const dist: number[] = Array.from({ length: verCount! }, () => Infinity)
   dist[verStart] = 0
 
   for (let i = 0; i < verCount - 1; i++) {
-    for (let item of graph) {
-      let u = item[0]
-      let v = item[1]
-      let w = item[2]
-      if (dist[u] !== Infinity && dist[u] + w < dist[v]) {
-        dist[v] = dist[u] + w
+    for (const item of graph) {
+      const u: number = item[0] ?? 0
+      const v: number = item[1] ?? 0
+      const w: number = item[2] ?? 0
+      if (dist[u] !== Infinity && dist[u]! + w < dist[v]!) {
+        dist[v] = dist[u]! + w
       }
     }
   }
 
-  for (let item of graph) {
-    let u = item[0]
-    let v = item[1]
-    let w = item[2]
-    if (dist[u] != Infinity && dist[u] + w < dist[v]) {
+  for (const item of graph) {
+    const u: number = item[0] ?? 0
+    const v: number = item[1] ?? 0
+    const w: number = item[2] ?? 0
+    if (dist[u] != Infinity && dist[u]! + w < dist[v]!) {
       console.log('???')
     }
   }
 
   dist.map((item, index) => console.log(index, item))
-  console.log(dist[verEnd])
   return dist[verEnd]
 }

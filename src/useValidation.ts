@@ -1,8 +1,26 @@
 import { reactive, computed } from 'vue'
 import { z } from 'zod'
 
+interface NewEdgeInterface {
+  inputVer: string
+  outputVer: string
+  weightVer: number
+}
+
+interface PathSearchInterface {
+  startVer: string
+  endVer: string
+}
+
+interface formStateInterface {
+  state: {
+    newEdge: NewEdgeInterface
+    pathSearch: PathSearchInterface
+  }
+}
+
 const useValidation = () => {
-  const formState = reactive({
+  const formState: formStateInterface = reactive({
     state: {
       newEdge: {
         inputVer: '',

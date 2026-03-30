@@ -2,7 +2,6 @@ import { describe, it, expect, beforeAll } from 'vitest'
 
 import { mount } from '@vue/test-utils'
 import App from '../App.vue'
-import { VueFlow, Panel, Position } from '@vue-flow/core'
 
 beforeAll(() => {
   global.ResizeObserver = class ResizeObserver {
@@ -11,22 +10,15 @@ beforeAll(() => {
     disconnect() {}
   }
 
-  Object.defineProperty(HTMLElement.prototype, 'offsetWidth', {
-    configurable: true,
-    value: 800,
-  })
+  Object.defineProperty(HTMLElement.prototype, 'offsetWidth', {})
 
-  Object.defineProperty(HTMLElement.prototype, 'offsetHeight', {
-    configurable: true,
-    value: 600,
-  })
+  Object.defineProperty(HTMLElement.prototype, 'offsetHeight', {})
 
-  SVGElement.prototype.getBBox = () => ({
-    x: 0,
-    y: 0,
-    width: 0,
-    height: 0,
-  })
+  // @ts-ignore
+  global.DOMMatrixReadOnly = class DOMMatrixReadOnly {}
+
+  // @ts-ignore
+  SVGElement.prototype.getBBox = () => ({})
 
   window.alert = () => {}
 })
@@ -37,6 +29,8 @@ describe('App', () => {
     const el = wrapper.find('#ver-append-button')
     await el.trigger('click')
     await el.trigger('click')
+
+    // @ts-ignore
     expect(wrapper.vm.nodes.length).toBe(3)
   })
 
@@ -46,6 +40,8 @@ describe('App', () => {
     for (let i = 0; i < 33; i++) {
       await el.trigger('click')
     }
+
+    // @ts-ignore
     expect(wrapper.vm.nodes.length).toBe(26)
   })
 
@@ -61,6 +57,7 @@ describe('App', () => {
     await inputLabelWeight.setValue(10)
     await buttonConnect.trigger('click')
 
+    // @ts-ignore
     expect(wrapper.vm.nodes.length).toBe(3)
   })
 
@@ -79,6 +76,28 @@ describe('App', () => {
     await buttonConnect.trigger('click')
 
     await verAppendButton.trigger('click')
+
+    // @ts-ignore
     expect(wrapper.vm.nodes[wrapper.vm.nodes.length - 1].data.label).equal('D')
+  })
+
+  it('created only one when vertices connected', async () => {
+    const wrapper = mount(App)
+
+    const inputLabelIn = wrapper.find('#input-in')
+    const inputLabelOut = wrapper.find('#input-out')
+    const inputLabelWeight = wrapper.find('#input-weight')
+    const buttonConnect = wrapper.find('#connect-ver-btn')
+    const verAppendButton = wrapper.find('#ver-append-button')
+
+    await verAppendButton.trigger('click')
+
+    await inputLabelIn.setValue('B')
+    await inputLabelOut.setValue('C')
+    await inputLabelWeight.setValue(10)
+    await buttonConnect.trigger('click')
+
+    // @ts-ignore
+    expect(wrapper.vm.nodes.length).toBe(3)
   })
 })
