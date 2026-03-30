@@ -4,6 +4,7 @@
       <Panel>
         <div class="form-ver">
           <input
+            id="input-in"
             type="text"
             v-model="formState.state.newEdge.inputVer"
             placeholder="A ->"
@@ -11,6 +12,7 @@
             class="ver-input"
           />
           <input
+            id="input-out"
             type="text"
             v-model="formState.state.newEdge.outputVer"
             placeholder="<- B"
@@ -18,15 +20,16 @@
             class="ver-input"
           />
           <input
+            id="input-weight"
             type="number"
             v-model="formState.state.newEdge.weightVer"
             placeholder="Вес"
             minLength="1"
             class="ver-input"
           />
-          <button class="form-ver-button" @click="createEdge">Соединить вершины</button>
+          <button id="connect-ver-btn" class="form-ver-button" @click="createEdge">Соединить вершины</button>
         </div>
-        <button class="form-ver-button" @click="() => appendVer()">Добавить вершину</button>
+        <button id="ver-append-button" class="form-ver-button" @click="() => appendVer()">Добавить вершину</button>
         <div class="form-ver">
           <input
             type="text"
@@ -96,6 +99,10 @@ const { formState, resetNewEdge, resetPathSearch, validateNewEdgeForm, validateP
   useValidation()
 
 const appendVer = (edgeSymbol: String | null) => {
+  if (nodes.value.length > 25) {
+    alert("Cлишком много вершин!")
+    return
+  }
   const copyNodeValues = [...nodes.value]
   const length = copyNodeValues.length
   const lastElement = copyNodeValues[length - 1]
