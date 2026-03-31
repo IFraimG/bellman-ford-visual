@@ -3,7 +3,7 @@ export const execute = (
   verCount: number = 0,
   verStart: number = 0,
   verEnd: number = 0,
-) => {
+): number => {
   const dist: number[] = Array.from({ length: verCount! }, () => Infinity)
   dist[verStart] = 0
 

@@ -28,6 +28,7 @@
             class="ver-input"
           />
           <button id="connect-ver-btn" class="form-ver-button" @click="createEdge">Соединить вершины</button>
+          <h2 class="result">{{ resultWeight }}</h2>
         </div>
         <button id="ver-append-button" class="form-ver-button" @click="() => appendVer(null)">Добавить вершину</button>
         <div class="form-ver">
@@ -51,7 +52,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { reactive, ref } from 'vue'
 import { VueFlow, Panel, Position } from '@vue-flow/core'
 import type { Node, Edge } from '@vue-flow/core'
 import { execute } from './algorithm'
@@ -106,9 +107,12 @@ const edges = ref<Edge[]>([
   // }
 ])
 
+const resultWeight = ref<string | null>(null)
+
 const { formState, resetNewEdge, resetPathSearch, validateNewEdgeForm, validatePathSearchForm } =
   useValidation()
 
+const timer = ref<number | null>(null)
 
 const generateUniqueLabel = () => {
   const existingLabels = nodes.value.map((node: CustomNode) => node.data.label)
@@ -206,12 +210,12 @@ const findRoute = () => {
     alert('Неверно указаны данные!')
     return
   }
-  const startVer: string = nodes.value.find(
+  const startVerIndex: number = nodes.value.findIndex(
     (item: CustomNode) => item.data.label == formState.state.pathSearch.startVer,
-  )?.id!
-  const verEnd: string = nodes.value.find(
+  )
+  const verEndIndex: number = nodes.value.findIndex(
     (item: CustomNode) => item.data.label == formState.state.pathSearch.endVer,
-  )?.id!
+  )
   const graph: number[][] = edges.value.map((item: Edge) => {
     return [parseInt(item.source), parseInt(item.target), parseInt(item.label as string)]
   })
@@ -221,10 +225,14 @@ const findRoute = () => {
     maxValue = Math.max(maxValue, item[1]!)
   })
 
-  const result = execute(graph, maxValue + 1, parseInt(startVer), parseInt(verEnd))
-  alert(
-    `Итоговый результат ${formState.state.pathSearch.startVer} -> ${formState.state.pathSearch.endVer}: ${result}`,
-  )
+  const result = execute(graph, maxValue + 1, parseInt(nodes.value[startVerIndex]!.id), parseInt(nodes.value[verEndIndex]!.id))
+  resultWeight.value = `Итоговый результат ${formState.state.pathSearch.startVer} -> ${formState.state.pathSearch.endVer}: ${result}`
+
+  if (timer.value != null) clearTimeout(timer.value)
+  timer.value = setTimeout(() => {
+    resultWeight.value = null
+  }, 4000)
+
 
   resetPathSearch()
 }
