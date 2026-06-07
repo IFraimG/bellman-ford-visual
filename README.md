@@ -1,5 +1,7 @@
 # Визуализация работы алгоритма Форда-Беллмана
 
+[Ссылка на курсовую работу](https://drive.google.com/file/d/13qULD-H4IXdCRejb17SaZQtz7RfENVBD/view?usp=sharing)
+
 ## Установка
 
 ```sh
